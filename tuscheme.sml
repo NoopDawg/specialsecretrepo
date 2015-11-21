@@ -1208,13 +1208,31 @@ fun typeof (e, gamma, delta)  =
 	fun ty (LITERAL (BOOL b)) = booltype
 	 |  ty (LITERAL (NUM n))  = inttype
 	 |  ty (LITERAL (SYM s))  = symtype
-	 |  ty _ = raise TypeError ("Nah tho")
+	 |  ty (IFX (e1, e2, e3)) = 
+            let val tau1 = ty e1
+                val tau2 = ty e2
+                val tau3 = ty e3
+            in  if eqType (tau1, booltype) then
+                  if eqType (tau2, tau3) then
+			tau2
+		  else
+                    raise TypeError ("In if expression, true branch has type " ^
+                                     typeString tau2 ^
+                                                 " but false branch has type " ^
+                                     typeString tau3)
+                else
+                  raise TypeError ("Condition in if expression has type " ^
+                                                               typeString tau1 ^
+                                   ", which should be " ^ typeString booltype)
+	   end
+	 |  ty _ = raise TypeError ("Typeof did not work!")
       in (ty e)
   end
 fun elabdef (d, gamma, delta) = 
     case d
        of 
 	VAL (x, e) => (bind (x, typeof(e, gamma, delta), gamma), typeString(typeof(e, gamma, delta)))
+	 | EXP e => elabdef (VAL ("it", e), gamma, delta) 
 	 | _ => raise TypeError "No bueno"
 (* type declarations for consistency checking *)
 val _ = op typeof  : exp * tyex env * kind env -> tyex
