@@ -1049,10 +1049,40 @@ fun typeof (e, globals, functions, formals) =
              end
 
 (* function [[ty]], to check the type of an expression, given $\itenvs$ ((prototype)) 345 *)
-      | ty (AGET (a, i))       = raise LeftAsExercise "AGET"
-      | ty (ASET (a, i, e))    = raise LeftAsExercise "ASET"
-      | ty (AMAKE (len, init)) = raise LeftAsExercise "AMAKE"
-      | ty (ALEN a)            = raise LeftAsExercise "ALEN"
+      | ty (AGET (a, i))       =
+	   let  val atau = ty a
+		val itau = ty i
+	   fun arraytype (ARRAYTY arrtype) =
+		if eqType(itau, INTTY) then arrtype
+		else raise TypeError ("Non-integer index to array")
+            |  arraytype a = raise TypeError ("Can't get element from a non-array")  
+	   in (arraytype atau)
+          end 
+
+      | ty (ASET (a, i, e))    =
+	let val (atau, itau, etau) = (ty a, ty i, ty e)
+	in if eqType(atau, (ARRAYTY etau)) then
+		if eqType(itau, INTTY) then
+			etau
+		else
+			raise TypeError ("non-integer index to array")
+	    else
+		raise TypeError ("index non-array")
+	end
+      | ty (AMAKE (len, init)) =
+	let val ltau = ty len
+	    val itau = ty init
+	in if eqType(ltau, INTTY) then
+		ARRAYTY itau
+	   else 
+		raise TypeError("Non-integer length given for array length")
+	end
+      | ty (ALEN a)            =
+	let val atau = ty a
+	    fun arraytype(ARRAYTY arrtype) = INTTY
+   	     |  arraytype a = raise TypeError ("Can't get length of a non-array")
+	in (arraytype atau) 
+	end
 (* type declarations for consistency checking *)
 val _ = op typeof  : exp * ty env * funty env * ty env -> ty
 val _ = op ty      : exp -> ty
