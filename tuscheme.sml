@@ -1203,8 +1203,19 @@ fun appearsUnprotectedIn (x, e) =
   end
 (* type checking for {\tuscheme} ((prototype)) 367a *)
 exception LeftAsExercise of string
-fun typeof _  = raise LeftAsExercise "typeof"
-fun elabdef _ = raise LeftAsExercise "elabdef"
+fun typeof (e, gamma, delta)  =
+  let
+	fun ty (LITERAL (BOOL b)) = booltype
+	 |  ty (LITERAL (NUM n))  = inttype
+	 |  ty (LITERAL (SYM s))  = symtype
+	 |  ty _ = raise TypeError ("Nah tho")
+      in (ty e)
+  end
+fun elabdef (d, gamma, delta) = 
+    case d
+       of 
+	VAL (x, e) => (bind (x, typeof(e, gamma, delta), gamma), typeString(typeof(e, gamma, delta)))
+	 | _ => raise TypeError "No bueno"
 (* type declarations for consistency checking *)
 val _ = op typeof  : exp * tyex env * kind env -> tyex
 val _ = op elabdef : def * tyex env * kind env -> tyex env * string
