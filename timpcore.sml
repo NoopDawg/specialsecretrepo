@@ -1067,7 +1067,7 @@ fun typeof (e, globals, functions, formals) =
 		else
 			raise TypeError ("non-integer index to array")
 	    else
-		raise TypeError ("index non-array")
+		raise TypeError ("assigned array element of wrong type")
 	end
       | ty (AMAKE (len, init)) =
 	let val ltau = ty len
