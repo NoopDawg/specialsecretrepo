@@ -1251,6 +1251,7 @@ fun typeof (e, gamma, delta)  =
 		in last unittype bodytypes
 		end
 	 | ty (APPLY(f, actuals)) =
+		(* TODO make '=' work *)
 		let val actualTypes = map ty actuals
 		    val ftau = ty f
 		in
@@ -1270,6 +1271,7 @@ fun typeof (e, gamma, delta)  =
 			typeof(body, gammaprime, delta)
 		end
 	 |  ty (LAMBDA (bs, body)) =
+		(* Is there some issue with not using kind here? *)
 		let 	val (names, expressionTypes) = ListPair.unzip bs
 			val gammaprime = bindList(names, expressionTypes, gamma)
 			val resulttype = typeof(body,gammaprime, delta) 
@@ -1294,7 +1296,17 @@ fun elabdef (d, gamma, delta) =
     case d
        of 
 	VAL (x, e) => (bind (x, typeof(e, gamma, delta), gamma), typeString(typeof(e, gamma, delta)))
-	 | EXP e => elabdef (VAL ("it", e), gamma, delta) 
+	 | EXP e => elabdef (VAL ("it", e), gamma, delta)
+	 | VALREC (x, tau, e) => 
+		let val etau = typeof(e, gamma, delta)
+		in if not (appearsUnprotectedIn(x, e)) then
+			if eqType(etau, tau) then
+				(bind (x, tau, gamma), typeString(tau))
+			else
+				raise TypeError ("Expression does not match given type")
+		else
+			raise TypeError ("Identifier " ^ x ^ " is evaluated in right hand side of val-rec")
+		end 
 	 | _ => raise TypeError "No bueno"
 (* type declarations for consistency checking *)
 val _ = op typeof  : exp * tyex env * kind env -> tyex
