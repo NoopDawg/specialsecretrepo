@@ -1275,7 +1275,18 @@ fun typeof (e, gamma, delta)  =
 			val resulttype = typeof(body,gammaprime, delta) 
 		in 
 			funtype(expressionTypes, resulttype)
-		end		
+		end	
+	 |  ty (LETX (LETSTAR, bs, body)) = 
+		let 	val (names, expressions) = ListPair.unzip bs
+			val n = (hd names)
+			val eType = (ty (hd expressions))
+			val gammaprime =  bind(n, eType, gamma) 
+		in
+			if (length bs) < 2 then 
+				typeof((LETX (LET, bs, body)), gamma, delta)
+			else
+				typeof((LETX (LETSTAR, (tl bs), body)), gammaprime, delta)
+		end
 	 |  ty _ = raise TypeError ("Typeof did not work!")
       in (ty e)
   end
