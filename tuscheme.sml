@@ -1244,6 +1244,12 @@ fun typeof (e, gamma, delta)  =
 					typeString tau1 ^ ", which should be " ^
 					typeString booltype)
 		end
+	 | ty (BEGIN es) = 
+		let val bodytypes = map ty es
+			fun last tau [] = tau
+			 |  last tau (h::t) = last h t 
+		in last unittype bodytypes
+		end
 	 | ty (APPLY(f, actuals)) =
 		let val actualTypes = map ty actuals
 		    val ftau = ty f
@@ -1263,7 +1269,13 @@ fun typeof (e, gamma, delta)  =
 		in 
 			typeof(body, gammaprime, delta)
 		end
-			
+	 |  ty (LAMBDA (bs, body)) =
+		let 	val (names, expressionTypes) = ListPair.unzip bs
+			val gammaprime = bindList(names, expressionTypes, gamma)
+			val resulttype = typeof(body,gammaprime, delta) 
+		in 
+			funtype(expressionTypes, resulttype)
+		end		
 	 |  ty _ = raise TypeError ("Typeof did not work!")
       in (ty e)
   end
