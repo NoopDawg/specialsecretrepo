@@ -1234,6 +1234,16 @@ fun typeof (e, gamma, delta)  =
                                                                typeString tau1 ^
                                    ", which should be " ^ typeString booltype)
 	   end
+	 | ty (WHILEX (e1, e2)) = 
+		let val tau1 = ty e1
+			val tau2 = ty e2
+		in if eqType(tau1, booltype) then 
+			unittype 
+		else
+			raise TypeError ("Condition in while expression has type " ^
+					typeString tau1 ^ ", which should be " ^
+					typeString booltype)
+		end
 	 | ty (APPLY(f, actuals)) =
 		let val actualTypes = map ty actuals
 		    val ftau = ty f
