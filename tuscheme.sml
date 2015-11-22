@@ -1209,6 +1209,14 @@ fun typeof (e, gamma, delta)  =
 	 |  ty (LITERAL (NUM n))  = inttype
 	 |  ty (LITERAL (SYM s))  = symtype
 	 |  ty (VAR (x)) = find (x, gamma)
+	 |  ty (SET (x, e)) = 
+		let val  xtau = ty (VAR x)
+		    val  etau = ty e
+		in if eqType(xtau, etau) then
+		   xtau
+		else
+			raise TypeError ("Set variable " ^ x ^ " of type " ^ typeString xtau ^ " to value of type " ^ typeString etau)
+		end
 	 |  ty (IFX (e1, e2, e3)) = 
             let val tau1 = ty e1
                 val tau2 = ty e2
@@ -1235,9 +1243,10 @@ fun typeof (e, gamma, delta)  =
 			result
 			else raise TypeError ("Type mismatch")
 		
-		| _ => raise TypeError ("You fucked everything to pieces")
+		| _ => raise TypeError ("You broke everything to pieces")
 	   end
 	 |  ty (LETX (LET, bs, body)) =  
+		(* TODO test when we have the define function*)
 		let val (names, expressions) = ListPair.unzip bs
 		 	val expressionTypes = map ty expressions
 			val gammaprime = bindList(names, expressionTypes, gamma)
