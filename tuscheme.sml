@@ -1290,6 +1290,13 @@ fun typeof (e, gamma, delta)  =
 			val kinds = map kindsForMap expressionTypes 
 		in 
 			funtype(expressionTypes, resulttype)
+		end
+	 |  ty (TYLAMBDA (alphas, e)) =
+		let 	fun bindKinds nil d = d
+			 |  bindKinds a d = bindKinds (tl a) (bind((hd a), TYPE, d))
+			val dprime = bindKinds alphas delta
+		in
+			typeof(e, gamma, dprime)
 		end	
 	 |  ty (LETX (LETSTAR, bs, body)) = 
 		let 	val (names, expressions) = ListPair.unzip bs
