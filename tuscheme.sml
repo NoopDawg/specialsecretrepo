@@ -1270,8 +1270,15 @@ fun typeof (e, gamma, delta)  =
 			result
 			else raise TypeError ("Error in APPLY")
 		
-		| _ => raise TypeError ("You broke everything to pieces")
+		| _ => raise TypeError ("Apply hit the base case")
 	   end
+	 |  ty (TYAPPLY (e, taus)) = 
+		let 	val etau = ty e
+			fun kindForMap tau = kindof(tau, delta)
+			val kinds = map kindForMap taus
+		in
+			instantiate(etau, taus, delta)
+		end
 	 |  ty (LETX (LET, bs, body)) =  
 		(* TODO test when we have the define function*)
 		let val (names, expressions) = ListPair.unzip bs
