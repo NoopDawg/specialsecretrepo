@@ -1271,10 +1271,13 @@ fun typeof (e, gamma, delta)  =
 			typeof(body, gammaprime, delta)
 		end
 	 |  ty (LAMBDA (bs, body)) =
-		(* Is there some issue with not using kind here? *)
+		(* Is there some issue with not using kind here? 
+			need to check that every type has a kind in delta	*)
 		let 	val (names, expressionTypes) = ListPair.unzip bs
 			val gammaprime = bindList(names, expressionTypes, gamma)
-			val resulttype = typeof(body,gammaprime, delta) 
+			val resulttype = typeof(body,gammaprime, delta)
+			fun kindsForMap tau = kindof(tau, delta)
+			val kinds = map kindsForMap expressionTypes 
 		in 
 			funtype(expressionTypes, resulttype)
 		end	
