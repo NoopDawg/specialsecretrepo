@@ -1298,16 +1298,26 @@ fun elabdef (d, gamma, delta) =
 	VAL (x, e) => (bind (x, typeof(e, gamma, delta), gamma), typeString(typeof(e, gamma, delta)))
 	 | EXP e => elabdef (VAL ("it", e), gamma, delta)
 	 | VALREC (x, tau, e) => 
-		let val etau = typeof(e, gamma, delta)
+		let	val gammaprime = bind(x, tau, gamma)
+			val etau = typeof(e, gammaprime, delta)
 		in if not (appearsUnprotectedIn(x, e)) then
 			if eqType(etau, tau) then
-				(bind (x, tau, gamma), typeString(tau))
+				(gammaprime, typeString(tau))
 			else
 				raise TypeError ("Expression does not match given type")
 		else
 			raise TypeError ("Identifier " ^ x ^ " is evaluated in right hand side of val-rec")
-		end 
-	 | _ => raise TypeError "No bueno"
+		end
+	 | DEFINE (x, tau, (bs, body)) =>
+		let 	val ltau = typeof((LAMBDA (bs, body)), gamma, delta)
+			val (names, expressionTypes) = ListPair.unzip bs
+			val gammap2 = bindList(names, expressionTypes, gamma)
+		in
+			if eqType(tau, (typeof (body, gammap2, delta))) then
+				elabdef((VALREC(x, ltau, (LAMBDA (bs, body)))), gammap2, delta)
+			else
+				raise TypeError "Type mismatch"
+		end
 (* type declarations for consistency checking *)
 val _ = op typeof  : exp * tyex env * kind env -> tyex
 val _ = op elabdef : def * tyex env * kind env -> tyex env * string
