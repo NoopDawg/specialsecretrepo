@@ -1261,16 +1261,15 @@ fun typeof (e, gamma, delta)  =
 		in last unittype bodytypes
 		end
 	 | ty (APPLY(f, actuals)) =
-		(* TODO make '=' work *)
 		let val actualTypes = map ty actuals
 		    val ftau = ty f
 		in
 		case ftau of  
   			CONAPP (TYCON "function", [CONAPP (TYCON "argtuple", args), result])=> if eqType(ftau, (funtype(actualTypes,  result))) then 
 			result
-			else raise TypeError ("Error in APPLY")
+			else raise TypeError ("Function's type does not match types of arguments")
 		
-		| _ => raise TypeError ("Apply hit the base case")
+		| _ => raise TypeError ("function is polymorphic; instantiate before applying")
 	   end
 	 |  ty (TYAPPLY (e, taus)) = 
 		let 	val etau = ty e
