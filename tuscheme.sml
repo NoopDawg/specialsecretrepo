@@ -1208,6 +1208,16 @@ fun typeof (e, gamma, delta)  =
 	fun ty (LITERAL (BOOL b)) = booltype
 	 |  ty (LITERAL (NUM n))  = inttype
 	 |  ty (LITERAL (SYM s))  = symtype
+	 |  ty (LITERAL (PAIR (a, NIL))) = (listtype (ty (LITERAL a)))
+	 |  ty (LITERAL (PAIR (a, b))) = 
+		let 	val atau = ty (LITERAL a)
+			val btau = ty (LITERAL b)
+			val alisttau = (listtype atau)
+		in if eqType(alisttau, btau) then
+			btau
+		   else raise TypeError "mixed types in list literal"
+		end	
+	 |  ty (LITERAL (NIL)) = FORALL(["'a"], listtype tyvarA) 
 	 |  ty (VAR (x)) = find (x, gamma)
 	 |  ty (SET (x, e)) = 
 		let val  xtau = ty (VAR x)
@@ -1258,7 +1268,7 @@ fun typeof (e, gamma, delta)  =
 		case ftau of  
   			CONAPP (TYCON "function", [CONAPP (TYCON "argtuple", args), result])=> if eqType(ftau, (funtype(actualTypes,  result))) then 
 			result
-			else raise TypeError ("Type mismatch")
+			else raise TypeError ("Error in APPLY")
 		
 		| _ => raise TypeError ("You broke everything to pieces")
 	   end
