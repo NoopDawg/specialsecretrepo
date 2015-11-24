@@ -1273,8 +1273,6 @@ fun typeof (e, gamma, delta)  =
 	   end
 	 |  ty (TYAPPLY (e, taus)) = 
 		let 	val etau = ty e
-			fun kindForMap tau = kindof(tau, delta)
-			val kinds = map kindForMap taus
 		in
 			instantiate(etau, taus, delta)
 		end
@@ -1302,7 +1300,7 @@ fun typeof (e, gamma, delta)  =
 			 |  bindKinds a d = bindKinds (tl a) (bind((hd a), TYPE, d))
 			val dprime = bindKinds alphas delta
 		in
-			typeof(e, gamma, dprime)
+			FORALL(alphas, typeof(e, gamma, dprime))
 		end	
 	 |  ty (LETX (LETSTAR, bs, body)) = 
 		let 	val (names, expressions) = ListPair.unzip bs
